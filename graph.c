@@ -169,3 +169,10 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     }
     return index_to_ret;
   }
+
+  void graph_deallocate(struct graph *g) {
+    for (int i = 0; i < g->num_vertices; i++) {
+      ll_deallocate(g->edges[i]);
+    }
+    g = NULL;
+  }

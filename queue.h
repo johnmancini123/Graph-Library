@@ -22,4 +22,5 @@ void q_print(struct queue *q);
 int is_empty(struct queue *q);
 int peek(struct q_node *temp);
 int q_del_min(struct queue *q);
+void q_deallocate(struct queue *q);
 #endif

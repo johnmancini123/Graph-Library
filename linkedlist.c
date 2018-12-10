@@ -88,3 +88,13 @@ float ll_get_weight(struct linkedlist *ll, int index) {
   }
   return temp->weight;
 }
+
+void ll_deallocate(struct linkedlist *ll) {
+  struct ll_node *temp;
+  for (int i = 0; i < ll->size; i++) {
+    temp = ll->head;
+    ll->head = ll->head->next;
+    free(temp);
+  }
+  ll = NULL;
+}
