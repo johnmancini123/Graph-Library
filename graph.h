@@ -33,6 +33,8 @@ void explore(struct graph *g, int v, int *visited);
 
 void dijkstras_shortest_path(struct graph* g, int s); //dijkstras
 int min_distance(float dist[], int set[], int V);
+
+void prims(struct graph *g);
 //to deallocate
 void graph_deallocate(struct graph *g);
 #endif

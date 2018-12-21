@@ -17,7 +17,14 @@ int main() {
   // ll_print(ll);
   // ll_deallocate(ll);
   // ll_print(ll);
-  //TODO make graph_delete_edge accomodate directed and undirected graphs!
-
-
+  //TODO make graph_delete_edge 
+  struct graph *g = init_graph(0, 4);
+  graph_add(g, 0, 1, 1);
+  graph_add(g, 0, 2, 2);
+  graph_add(g, 1,2,1);
+  graph_add(g, 1,2,5);
+  graph_print(g);
+  
+  prims(g);  
+  graph_deallocate(g);
 }

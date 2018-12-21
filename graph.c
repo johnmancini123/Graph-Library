@@ -55,7 +55,8 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     return toRet;
   }
 
-  float edge_weight(struct graph *g, int a, int b) {
+  float edge_weight(struct graph *g, 
+    int a, int b) {
     float toRet = -1;
     if (has_edge(g, a, b)) {
       for (int i = 0; i < ll_size(g->edges[a]); i++) {
@@ -169,7 +170,56 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     }
     return index_to_ret;
   }
+  
+//PRIMS
+  void prims(struct graph *g) {
+    struct linkedlist *mst = 
+    init_linkedlist();
 
+    int min;
+    int minVertice;
+    int vertice;
+    ll_add(mst, 0, 0.0);
+    
+    if (g->directed) {
+    }
+    else { //for undirected graph
+      while (ll_size(mst) < 
+      num_nodes(g)-1) {
+        min = INT_MAX;
+        for (int i = 0; i < ll_size(mst); 
+        i++) {
+           vertice = 
+        ll_get_neighbor(mst, i);
+          for (int j = 0; j < 
+          ll_size(g->edges[vertice]); 
+          j++) {
+            int tempV = 
+            ll_get_neighbor(g->edges[vertice],j 
+            );
+            int tempWeight = 
+            ll_get_weight(g->edges[vertice], 
+            j);
+            if (!ll_in(mst, tempV)  && 
+            tempWeight < min) {
+              min = tempWeight;
+              minVertice = tempV;
+            }
+          }
+          ll_add(mst, minVertice, min);
+        }
+        
+      }
+    }
+    puts("he");
+    int sum = 0;
+    for (int v = 0; v < ll_size(mst); 
+    v++) {
+      sum+=ll_get_weight(mst, v);
+    }
+    printf("sum of mst = %d\n", sum);
+  }
+  	
   void graph_deallocate(struct graph *g) {
     for (int i = 0; i < g->num_vertices; i++) {
       ll_deallocate(g->edges[i]);

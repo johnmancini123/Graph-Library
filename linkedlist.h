@@ -23,5 +23,6 @@ void ll_del(struct linkedlist *ll, int index);
 void ll_print(struct linkedlist *ll);
 int ll_get_neighbor(struct linkedlist *ll, int index);
 float ll_get_weight(struct linkedlist *ll, int index);
+int ll_in(struct linkedlist *ll, int);
 void ll_deallocate(struct linkedlist *ll);
 #endif

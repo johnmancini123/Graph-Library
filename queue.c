@@ -108,3 +108,14 @@ int is_empty(struct queue *q) {
 int peek(struct q_node *temp) {
   return temp->vertice;
 }
+
+void q_deallocate(struct queue *q) {
+	struct q_node *tmp = q->head;
+	for (int i = 0; i < q->size; i++) 
+	{
+		q->head = q->head->next;
+		free(tmp);
+		tmp = q->head;
+	}
+	q = NULL;
+}
