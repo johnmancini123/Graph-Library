@@ -4,10 +4,14 @@
 struct graph* init_graph(int directed, int number_of_vertices) {
   struct graph* g = (struct graph*)malloc(sizeof(struct graph) + number_of_vertices*sizeof(struct linkedlist));
   g->directed = directed;
+  if (directed) {
+    g->in_degree = (int*)malloc(sizeof(int) * number_of_vertices);
+  }
   g->num_vertices = number_of_vertices;
   for (int i = 0; i < number_of_vertices; i++) {
     g->edges[i] = init_linkedlist();
   }
+  g->cyclic = 0;
   return g;
 }
 //ADD AND DELETE
@@ -16,14 +20,28 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     if (!g->directed) {
       ll_add(g->edges[end_vertice], start_vertice, weight);
     }
+    else {
+      g->in_degree[end_vertice]++;
+      if (!g->cyclic && ll_size(g->edges[end_vertice])) { //if this node was already in the graph
+        g->cyclic = 1;
+      }
+    }
+    g->num_edges++;
   }
 
   void graph_delete_edge(struct graph *g, int start, int end) {
     for (int i = 0; i < ll_size(g->edges[start]); i++) {
-      if(ll_get_neighbor(g->edges[start], i) == end) {
+      if (ll_get_neighbor(g->edges[start], i) == end) {
         ll_del(g->edges[start], i);
+        if (!g->directed) {
+          ll_del(g->edges[end], start);
+        }
+        else {
+          g->in_degree[end]--;
+        }
       }
     }
+    g->num_edges--;
   }
 //PRINTER
   void graph_print(struct graph *g) {
@@ -36,12 +54,16 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     }
   }
 //GRAPH QUALITIES
-  int in_degree(struct graph *g, int vertice) {
-    return (ll_size(g->edges[vertice]));
+  int get_in_degree(struct graph *g, int vertice) {
+    return g->in_degree[vertice];
   }
 
   int num_nodes(struct graph *g) {
     return (g->num_vertices);
+  }
+
+  int num_edges(struct graph *g) {
+    return (g->num_edges);
   }
 
   int has_edge(struct graph* g, int a, int b) {
@@ -55,7 +77,7 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     return toRet;
   }
 
-  float edge_weight(struct graph *g, 
+  float edge_weight(struct graph *g,
     int a, int b) {
     float toRet = -1;
     if (has_edge(g, a, b)) {
@@ -170,59 +192,106 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     }
     return index_to_ret;
   }
-  
+
 //PRIMS
   void prims(struct graph *g) {
-    struct linkedlist *mst = 
-    init_linkedlist();
+    struct linkedlist *mst = init_linkedlist(); // holds all the nodes in the mst and the weights that connect them
 
-    int min;
-    int minVertice;
-    int vertice;
+    float min; //to track minimum edge weight
+    int minVertice; //vertice pointed to by that edge
+    int currentVertice; //current vertice in the mst we are looking at
+    int verticeToPrint; //simply to mainting the vertice that is in the set connected to an outside vertice with the lowest edge
     ll_add(mst, 0, 0.0);
-    
+
+    puts("Resulting Minimum Spanning Tree");
+
     if (g->directed) {
     }
     else { //for undirected graph
-      while (ll_size(mst) < 
-      num_nodes(g)-1) {
-        min = INT_MAX;
-        for (int i = 0; i < ll_size(mst); 
-        i++) {
-           vertice = 
-        ll_get_neighbor(mst, i);
-          for (int j = 0; j < 
-          ll_size(g->edges[vertice]); 
-          j++) {
-            int tempV = 
-            ll_get_neighbor(g->edges[vertice],j 
-            );
-            int tempWeight = 
-            ll_get_weight(g->edges[vertice], 
-            j);
-            if (!ll_in(mst, tempV)  && 
-            tempWeight < min) {
-              min = tempWeight;
-              minVertice = tempV;
+      while (ll_size(mst) < num_nodes(g)){ //mst size < number of nodes in the graph
+        min = FLT_MAX;
+        for (int i = 0; i < ll_size(mst); i++) {
+          currentVertice = ll_get_neighbor(mst, i); //get a node from mst
+          for (int j = 0; j < ll_size(g->edges[currentVertice]); j++) {
+            int tempV = ll_get_neighbor(g->edges[currentVertice],j); //look at vertices it points to
+            if (!ll_in(mst, tempV)) { //if node connected to by current node in set does is not also in set
+              float tempWeight = ll_get_weight(g->edges[currentVertice],j); //get that edges weight
+              if (tempWeight < min) { //if its less than min, set it as min
+                min = tempWeight;
+                minVertice = tempV;
+                verticeToPrint = currentVertice;
+              }
             }
+
           }
-          ll_add(mst, minVertice, min);
         }
-        
+        printf("(%d)-----%.2f-----(%d)\n", verticeToPrint, min, minVertice);
+        ll_add(mst, minVertice, min);
       }
     }
-    puts("he");
-    int sum = 0;
-    for (int v = 0; v < ll_size(mst); 
-    v++) {
-      sum+=ll_get_weight(mst, v);
+    puts("");
+    float sum = 0;
+    for (int v = 0; v < ll_size(mst);v++) {
+      sum += ll_get_weight(mst, v);
     }
-    printf("sum of mst = %d\n", sum);
+    printf("Sum of minimum spanning tree = %.2f\n", sum);
+
+    ll_deallocate(mst);
   }
-  	
+
+  //kahns
+  void kahns(struct graph *g) {
+    if (!g->directed || g->cyclic) {
+      puts("Graph is not a DAG");
+      return;
+    }
+    struct graph *toSort = graph_clone(g); //getting clone graph
+    int topSort[num_nodes(g)]; //will contain the resulting order of topological sort
+    int deletedNodes[num_nodes(g)];
+    for (int i = 0; i < num_nodes(g);i++) {
+      deletedNodes[i] = 0;
+    }
+    int i = 0;
+    while (toSort->num_edges > 0) {
+      graph_print(toSort);
+      puts("NEXT PRINT");
+      for (int v = 0; v < num_nodes(toSort); v++) {
+        if (get_in_degree(toSort, v) == 0 ) { //if the indegree of this vertice is 0
+          topSort[i++] = v;
+          deletedNodes[v] = 1;
+          for (int u = 0; u < ll_size(toSort->edges[v]); u++) {
+            graph_delete_edge(toSort, v, ll_get_neighbor(toSort->edges[v], u));
+          }
+        }
+      }
+    }
+
+    graph_deallocate(toSort);
+
+    puts("Topological Sort:");
+    for (int i = 0; i < num_nodes(g); i++) {
+      printf("%d ", topSort[i]);
+    }
+    puts("");
+  }
+
+//END OF ALGORITHMS
+  struct graph* graph_clone(struct graph *g) {
+    struct graph *toRet = init_graph(g->directed, num_nodes(g));
+    //cloning graph
+    for (int i = 0; i < num_nodes(g); i++) {
+      for (int j = 0; j < ll_size(g->edges[i]); j++) {
+        graph_add(toRet, i, ll_get_neighbor(g->edges[i], j), ll_get_weight(g->edges[i], j));
+      }
+    }
+    return toRet;
+  }
   void graph_deallocate(struct graph *g) {
     for (int i = 0; i < g->num_vertices; i++) {
       ll_deallocate(g->edges[i]);
+    }
+    if (g->directed) {
+      free(g->in_degree);
     }
     g = NULL;
   }

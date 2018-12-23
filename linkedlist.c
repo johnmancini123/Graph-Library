@@ -89,16 +89,14 @@ float ll_get_weight(struct linkedlist *ll, int index) {
   return temp->weight;
 }
 
-int ll_in(struct linkedlist *ll, int 
-vertice){
-  struct ll_node *tmp;
+int ll_in(struct linkedlist *ll, int vertice){
+  struct ll_node *tmp = ll->head;
   for (int i = 0; i< ll->size; i++) {
-    if (vertice == tmp->vertice) return 
-    0;
+    if (vertice == tmp->vertice) return 1;
     tmp=tmp->next;
   }
-  return 1;
-} 
+  return 0;
+}
 
 void ll_deallocate(struct linkedlist *ll) {
   struct ll_node *temp;

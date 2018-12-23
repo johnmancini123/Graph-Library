@@ -9,7 +9,10 @@
 
 struct graph {
   int directed;
+  int cyclic;
   int num_vertices;
+  int num_edges;
+  int *in_degree;
   struct linkedlist* edges[]; //each vertice has a linked list that points to
                                                 //all of its edges
 };
@@ -21,8 +24,9 @@ void graph_delete_edge(struct graph *g, int start, int end);
 //printer
 void graph_print(struct graph *g);
 //graph qualities
-int in_degree(struct graph *g, int vertice);
+int get_in_degree(struct graph *g, int vertice);
 int num_nodes(struct graph *g);
+int num_edges(struct graph *g);
 int has_edge(struct graph* g, int a, int b);
 float edge_weight(struct graph *g, int a, int b);
 //algorithms
@@ -35,6 +39,10 @@ void dijkstras_shortest_path(struct graph* g, int s); //dijkstras
 int min_distance(float dist[], int set[], int V);
 
 void prims(struct graph *g);
+
+void kahns(struct graph *g);
 //to deallocate
+struct graph* graph_clone(struct graph *g);
 void graph_deallocate(struct graph *g);
+
 #endif
