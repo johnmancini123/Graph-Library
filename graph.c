@@ -6,6 +6,9 @@ struct graph* init_graph(int directed, int number_of_vertices) {
   g->directed = directed;
   if (directed) {
     g->in_degree = (int*)malloc(sizeof(int) * number_of_vertices);
+    for (int i = 0; i <  number_of_vertices; i++ ) {
+      g->in_degree[i]= 0;
+    }
   }
   g->num_vertices = number_of_vertices;
   for (int i = 0; i < number_of_vertices; i++) {
@@ -16,15 +19,16 @@ struct graph* init_graph(int directed, int number_of_vertices) {
 }
 //ADD AND DELETE
   void graph_add(struct graph *g, int start_vertice, int end_vertice, float weight) {
+    if ((is_in_node(g, end_vertice) &&  is_in_node(g, start_vertice)) ||  is_out_node(g, end_vertice)) {
+         g->cyclic=1;
+    }
+   
     ll_add(g->edges[start_vertice], end_vertice, weight);
     if (!g->directed) {
       ll_add(g->edges[end_vertice], start_vertice, weight);
     }
     else {
       g->in_degree[end_vertice]++;
-      if (!g->cyclic && ll_size(g->edges[end_vertice])) { //if this node was already in the graph
-        g->cyclic = 1;
-      }
     }
     g->num_edges++;
   }
@@ -54,6 +58,20 @@ struct graph* init_graph(int directed, int number_of_vertices) {
     }
   }
 //GRAPH QUALITIES
+  int is_out_node(struct graph *g, int v){
+    if (ll_size(g->edges[v])) return 1;
+    return 0;
+  }
+
+  int is_in_node(struct graph *g, int vertice) {
+    for (int v = 0; v < num_nodes(g); v++) {
+      for (int u = 0; u < ll_size(g->edges[v]); u++) {
+        if (ll_get_neighbor(g->edges[v], u)  == vertice) return 1;
+      }
+    }
+    return 0;
+  }
+
   int get_in_degree(struct graph *g, int vertice) {
     return g->in_degree[vertice];
   }
@@ -241,7 +259,7 @@ struct graph* init_graph(int directed, int number_of_vertices) {
 
   //kahns
   void kahns(struct graph *g) {
-    if (!g->directed || g->cyclic) {
+    if (!(g->directed && !g->cyclic)) {
       puts("Graph is not a DAG");
       return;
     }
@@ -252,25 +270,34 @@ struct graph* init_graph(int directed, int number_of_vertices) {
       deletedNodes[i] = 0;
     }
     int i = 0;
-    while (toSort->num_edges > 0) {
-      graph_print(toSort);
-      puts("NEXT PRINT");
+    int j = 0;
+//while graph has remaininf edges    
+    while (j++ < num_nodes(toSort)) { 
       for (int v = 0; v < num_nodes(toSort); v++) {
-        if (get_in_degree(toSort, v) == 0 ) { //if the indegree of this vertice is 0
-          topSort[i++] = v;
-          deletedNodes[v] = 1;
-          for (int u = 0; u < ll_size(toSort->edges[v]); u++) {
-            graph_delete_edge(toSort, v, ll_get_neighbor(toSort->edges[v], u));
+       //if indegree to vertice is 0 and  it hasnt been deleted
+        if (get_in_degree(toSort, v) == 0  && !deletedNodes[v] ) {   
+          for (int u =  ll_size(toSort->edges[v])-1; u >=0; u--) {
+      //delete all edges from that node     
+            if (has_edge(toSort,  v,ll_get_neighbor(toSort->edges[v], u)))    
+               graph_delete_edge(toSort, v,   ll_get_neighbor(toSort->edges[v], u));
           }
+     //mark it as deleted and add it to top sort array
+          deletedNodes[v] = 1;
+          topSort[i++] = v;
         }
       }
     }
 
     graph_deallocate(toSort);
 
+//printing topological sort
     puts("Topological Sort:");
     for (int i = 0; i < num_nodes(g); i++) {
-      printf("%d ", topSort[i]);
+      if (i==num_nodes(g)-1)
+        printf("%d", topSort[i]);
+      else {
+        printf("%d->",topSort[i]);
+      }
     }
     puts("");
   }

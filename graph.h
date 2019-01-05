@@ -24,6 +24,8 @@ void graph_delete_edge(struct graph *g, int start, int end);
 //printer
 void graph_print(struct graph *g);
 //graph qualities
+int is_out_node(struct graph *, int);
+int is_in_node(struct graph *, int);
 int get_in_degree(struct graph *g, int vertice);
 int num_nodes(struct graph *g);
 int num_edges(struct graph *g);

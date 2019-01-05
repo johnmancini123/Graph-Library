@@ -4,19 +4,15 @@
 #include "queue.h"
 int main() {
 
-  struct graph *g = init_graph(1, 4);
-  graph_add(g, 0, 1, 10);
-  graph_add(g, 0, 2, 6);
-  graph_add(g, 2, 3, 4);
-  graph_add(g, 1,3 ,4);
-
+  struct graph *g = init_graph(1, 6);
+  graph_add(g, 5, 2, 10);
+  graph_add(g, 5, 0, 6);
+  graph_add(g, 4, 0, 4); 
+  graph_add(g, 4, 1, 4); 
+  graph_add(g, 2, 3, 4); 
+  graph_add(g, 3, 1, 4); 
   graph_print(g);
-
-
-  for (int i = 0; i < 4; i++) {
-    printf("node %d has indegree %d\n", i, get_in_degree(g, i));
-  }
-  puts("RUNNING KAHNS\n\n");
+  g->cyclic=0;
   kahns(g);
 
   graph_deallocate(g);
