@@ -10,3 +10,17 @@ ALGORITHMS:
   Breadth First Search using queue
   
   Dijkstra's Shortest Path
+
+  Prim's Minimum Spanning Tree
+  
+  Kahn's Topological Sort (for DAG)
+  
+  USER GUIDE:
+    To create a graph type in:
+      struct graph *g = graph_init(1 if directed 0 if not, number of vertices)
+    
+    To add an edge to the graph:
+      graph_add(g, start vertice, end vertie, edge weight)
+      
+    To print the graph:
+      graph_print(g)
