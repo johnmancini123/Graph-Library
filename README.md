@@ -17,6 +17,7 @@ ALGORITHMS:
   
   USER GUIDE:
     To create a graph type in:
+    
       struct graph *g = graph_init(1 if directed 0 if not, number of vertices)
     
     To add an edge to the graph:
